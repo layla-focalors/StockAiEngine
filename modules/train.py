@@ -23,10 +23,10 @@ def RunTrain(databaseID, stockID):
     
     dataloader = TranslationTensorType(train_set, test_set, seq_len, batch)
     
-    model = TrainModel_LSTM(dataloader, seq_len, 100, stockID=stockID)
+    model, model_name = TrainModel_LSTM(dataloader, seq_len, 100, stockID=stockID)
     print(model)
     # print(data)
-    return None
+    return model, model_name
 
 def SeparateData(df):
     try:
@@ -148,11 +148,11 @@ def TrainModel_LSTM(data_loader, seq_len, epochs, stockID):
         print("Model Loss Draw Failed EP3111")
         
     try:
-        SaveModelPth(model, stockID)
+        model_name = SaveModelPth(model, stockID)
     except:
         print("Model Save Failed EP3112")
             
-    return model
+    return model, model_name
     
 def ModelLossDraw(train_hist, stockID):
     plt.figure(figsize=(12, 6))
@@ -164,9 +164,10 @@ def ModelLossDraw(train_hist, stockID):
     return None
 
 def SaveModelPth(model, stockID):
-    torch.save(model.state_dict(), f"./model/{int(datetime.datetime.now().timestamp())}_model-{stockID}.pth")
+    model_name = f"./model/{int(datetime.datetime.now().timestamp())}_model-{stockID}.pth"
+    torch.save(model.state_dict(), model_name)
     
-    return None
+    return model_name
 
 def PredictTestDataset(model, testX_tensor, scaler_y, stockID):
     model.eval()

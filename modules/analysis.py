@@ -3,6 +3,7 @@ from modules import version
 from modules import db
 from modules import croller
 from modules import train
+from modules import inference
 
 import datetime
 
@@ -55,6 +56,9 @@ def MultiInference(env):
     system.DeleteImageRequire()
     
     # 학습 실행
-    train.RunTrain(databaseID, stock)
+    model, model_name = train.RunTrain(databaseID, stock)
+    
+    # 모델 로드
+    model_name = inference.LoadModelFromHive(model_name)
     
     
