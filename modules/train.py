@@ -1,7 +1,9 @@
 import pandas as pd
 import random
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from modules import db
@@ -17,7 +19,9 @@ def RunTrain(databaseID):
     batch = 100
     
     train_set, test_set = SeparateData(data)
-    # print(train_set)
+    
+    dataloader = TranslationTensorType(train_set, test_set, seq_len, batch)
+    # print(data)
     return None
 
 def SeparateData(df):
@@ -49,3 +53,28 @@ def ScaleData(train_set, test_set):
     test_set.iloc[:, -1] = scaler_y.transform(test_set.iloc[:, [-1]])
     
     return train_set, test_set
+
+def TranslationTensorType(train_set, test_set, seq_len, batch):
+    def build_dataset(time_series, seq_length):
+        dataX = []
+        dataY = []
+        for i in range(0, len(time_series) - seq_length):
+            _x = time_series[i:i + seq_length, :]
+            _y = time_series[i + seq_length, [-1]]
+            dataX.append(_x)
+            dataY.append(_y)
+        return np.array(dataX), np.array(dataY)
+    
+    trainX, trainY = build_dataset(np.array(train_set), seq_len)
+    testX, testY = build_dataset(np.array(test_set), seq_len)
+    
+    trainX_tensor = torch.FloatTensor(trainX)
+    trainY_tensor = torch.FloatTensor(trainY)
+    
+    testX_tensor = torch.FloatTensor(testX)
+    testY_tensor = torch.FloatTensor(testY)
+    
+    dataset = TensorDataset(trainX_tensor, trainY_tensor)
+    
+    data_loader = DataLoader(dataset, batch_size=batch, shuffle=True, drop_last=True)
+    return data_loader
