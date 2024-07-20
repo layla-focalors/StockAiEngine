@@ -58,7 +58,7 @@ def InferenceModel(model, databaseID):
     data = data.drop([0, 1, 2], axis=1)
     # data = data.iloc[-1]
 
-    print("Excution Data : ", data)
+    # print("Excution Data : ", data)
     data = data[::-1]
     
     seq_len = 60
