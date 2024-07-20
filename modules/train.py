@@ -22,6 +22,9 @@ def RunTrain(databaseID):
     train_set, test_set = SeparateData(data)
     
     dataloader = TranslationTensorType(train_set, test_set, seq_len, batch)
+    
+    model = TrainModel_LSTM(dataloader, seq_len, 100)
+    print(model)
     # print(data)
     return None
 
@@ -82,7 +85,7 @@ def TranslationTensorType(train_set, test_set, seq_len, batch):
 
 def TrainModel_LSTM(data_loader, seq_len, epochs):
     
-    input_size = 6
+    input_size = 5
     hidden_size = 100
     output_size = 1
     learning_rate = 0.01
@@ -108,6 +111,7 @@ def TrainModel_LSTM(data_loader, seq_len, epochs):
             x = self.linear(x[:, -1])
             return x
     
+    # trainNode1
     model = LSTM(input_size, hidden_size)
     loss_function = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -126,7 +130,8 @@ def TrainModel_LSTM(data_loader, seq_len, epochs):
                 print("Epoch: %d, Batch: %d, Loss: %1.5f" % (epoch, i, loss.item()))
                 
     # train
-    lstm = LSTM(input_size, hidden_size).to(torch.device)
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # lstm = LSTM(input_size, hidden_size).to(device)
     model, train_hist = TrainModel_LSTM(data_loader, seq_len, epochs)
     
     # 모델 저장 & 기록
@@ -140,7 +145,7 @@ def ModelLossDraw(train_hist):
     plt.plot(train_hist, label="Training loss")
     plt.title("Loss at each epoch")
     plt.legend()
-    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_loss.png")
+    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_train_loss.png")
     
     return None
 
@@ -148,3 +153,19 @@ def SaveModelPth(model):
     torch.save(model.state_dict(), f"./model/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_model.pth")
     
     return None
+
+def PredictTestDataset(model, testX_tensor, scaler_y):
+    model.eval()
+    test_predict = model(testX_tensor)
+    test_predict = scaler_y.inverse_transform(test_predict.detach().numpy())
+    
+    
+    return test_predict
+
+def DrawTestDatasetOut(test_predict):
+    fig = plt.figure(facecolor='white', figsize=(20, 10))
+    ax = fig.add_subplot(111)
+    ax.plot(test_predict, label='Predict')
+    ax.legend()
+    plt.show()
+    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_predict.png")
