@@ -17,7 +17,7 @@ def RunTrain(databaseID):
     batch = 100
     
     train_set, test_set = SeparateData(data)
-    print(train_set)
+    # print(train_set)
     return None
 
 def SeparateData(df):

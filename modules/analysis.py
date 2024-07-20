@@ -48,7 +48,10 @@ def MultiInference(env):
     databaseID = db.CreateTableAndDatabase()
     croller.RunCroller(trade, stock, databaseID)
     
+    # 오래된 DB 정리
+    system.DeleteDatabaseRequire(databaseID)
+    
     # 학습 실행
-    train.RunTrain(databaseID)
+    # train.RunTrain(databaseID)
     
     
