@@ -1,5 +1,6 @@
 from modules import system
 from modules import version
+from modules import db
 import datetime
 
 def getSystem():
@@ -35,5 +36,8 @@ def MultiInference():
     stock = dt[1]
     
     print(f"거래소 : {trade}, 종목 : {stock}")
+    
+    # db 생성
+    db.CreateTableAndDatabase()
     
     
