@@ -43,6 +43,19 @@ def InitCrollerData(databaseID, DATA):
     
     print("Data Insert Complete")
     
+def getDatabaseInfo(databaseID):
+    conn = sqlite3.connect(f"./database/stock-{databaseID}.db")
+    cur = conn.cursor()
+    
+    sql = """SELECT * FROM stock"""
+    cur.execute(sql)
+    
+    rows = cur.fetchall()
+    
+    conn.close()
+    
+    return rows
+
 def showDatabase(databaseID):
     conn = sqlite3.connect(f"./database/stock-{databaseID}.db")
     cur = conn.cursor()

@@ -2,6 +2,7 @@ from modules import system
 from modules import version
 from modules import db
 from modules import croller
+from modules import train
 
 import datetime
 
@@ -46,5 +47,8 @@ def MultiInference(env):
     # db 생성, databaseID 반환
     databaseID = db.CreateTableAndDatabase()
     croller.RunCroller(trade, stock, databaseID)
+    
+    # 학습 실행
+    train.RunTrain(databaseID)
     
     
