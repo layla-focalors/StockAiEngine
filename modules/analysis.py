@@ -17,14 +17,14 @@ def getSystem():
 def ExcuteTask(data):
     output = """\n분석에 활용할 거래소, 종목을 입력하십시오.\n주의 이 프로세스는 개발 버전으로 시스템의 최종 퀄리티가 아닙니다. \n이에 예측 실패, 오류 및 각종 시스템 에러가 발생할 수 있습니다.\n입력 방법 : (거래소):(종목)\n입력 예시 : nasdaq:aapl / kospi:005930"""
     
-    if version.getProcessVersion()[0:3] == "Dev":
+    if not version.getProcessVersion()[0:3] == "Dev":
         # dev
         print(output)
         MultiInference("Dev")
     else:
         # release
         while True:
-            out = MultiInference()
+            out = MultiInference("Release")
             if out == "stop":
                 break
     

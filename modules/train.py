@@ -11,7 +11,7 @@ from modules import db
 
 def RunTrain(databaseID, stockID):
     data = pd.DataFrame(db.getDatabaseInfo(databaseID))
-    data = data.drop([0, 1, 2], axis=1).reset_index(drop=True)
+    data = data.drop([0, 1, 2], axis=1)
     # print(data)
     data = data[::-1]
     
@@ -36,9 +36,8 @@ def SeparateData(df):
         train_set = df[0:train_size]
         test_set = df[train_size:]
         
-        # 데이터 스케일링 후 변경 
-        # train_set, test_set = ScaleData(train_set, test_set)
-        # ScaleData 함수 무시 - 데이터 값 오류 문제
+        # 데이터 스캐일링 후 변경 
+        train_set, test_set = ScaleData(train_set, test_set)
     except:
         print("Data Separate Failed EP2999")
     return train_set, test_set
@@ -92,7 +91,6 @@ def TranslationTensorType(train_set, test_set, seq_len, batch):
         print("Data Translation Failed EP3100")
     return data_loader
 
-
 def TrainModel_LSTM(data_loader, seq_len, epochs, stockID):
     
     try:
@@ -109,7 +107,7 @@ def TrainModel_LSTM(data_loader, seq_len, epochs, stockID):
                 self.hidden_size = hidden_size
                 self.lstm = torch.nn.LSTM(input_size, hidden_size, batch_first=True)
                 self.linear = torch.nn.Linear(hidden_size, 1)
-                
+            
             def reset_hidden_state(self, batch_size):
                 self.hidden = (
                     torch.zeros(1, batch_size, self.hidden_size),
@@ -118,10 +116,9 @@ def TrainModel_LSTM(data_loader, seq_len, epochs, stockID):
                 
             def forward(self, x):
                 x, _status = self.lstm(x)
-                x = self.linear(x[:, -1, :5])
-                # 코드의 예측값 수정
+                x = self.linear(x[:, -1])
                 return x
-
+        
         # trainNode1
         model = LSTM(input_size, hidden_size)
         loss_function = torch.nn.MSELoss()
