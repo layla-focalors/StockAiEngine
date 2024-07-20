@@ -6,6 +6,7 @@ from modules import train
 from modules import inference
 
 import datetime
+import pandas as pd
 
 def getSystem():
     print(f"Running analysis : Running Time {datetime.datetime.now()}")
@@ -58,7 +59,14 @@ def MultiInference(env):
     # 학습 실행
     model, model_name = train.RunTrain(databaseID, stock)
     
-    # 모델 로드
-    model_name = inference.LoadModelFromHive(model_name)
-    
+    # 모델 로드 & 추론
+    loaded_model = inference.LoadModelFromHive(model_name)
+    output_from_model = inference.InferenceModel(loaded_model, databaseID)
+        
+    # 오래된 모델 삭제
+    # system.DeleteOldModels()
+    df = pd.DataFrame(output_from_model.detach().numpy())
+    # print(df.iloc[-1:-2])
+    print(df)
+    df.to_csv(f"./csv/{databaseID + stock}.csv", index=False)
     

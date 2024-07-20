@@ -36,8 +36,9 @@ def SeparateData(df):
         train_set = df[0:train_size]
         test_set = df[train_size:]
         
-        # 데이터 스캐일링 후 변경 
+        # 데이터 스케일링 후 변경 
         train_set, test_set = ScaleData(train_set, test_set)
+        # 학습에는 스케일을 사용하고 추론에서는 scale 제외
     except:
         print("Data Separate Failed EP2999")
     return train_set, test_set
