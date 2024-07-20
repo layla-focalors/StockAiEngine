@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from modules import db
 
-def RunTrain(databaseID):
+def RunTrain(databaseID, stockID):
     data = pd.DataFrame(db.getDatabaseInfo(databaseID))
     data = data.drop([0, 1, 2], axis=1)
     # print(data)
@@ -23,7 +23,7 @@ def RunTrain(databaseID):
     
     dataloader = TranslationTensorType(train_set, test_set, seq_len, batch)
     
-    model = TrainModel_LSTM(dataloader, seq_len, 100)
+    model = TrainModel_LSTM(dataloader, seq_len, 100, stockID=stockID)
     print(model)
     # print(data)
     return None
@@ -83,13 +83,12 @@ def TranslationTensorType(train_set, test_set, seq_len, batch):
     data_loader = DataLoader(dataset, batch_size=batch, shuffle=True, drop_last=True)
     return data_loader
 
-def TrainModel_LSTM(data_loader, seq_len, epochs):
+def TrainModel_LSTM(data_loader, seq_len, epochs, stockID):
     
     input_size = 5
     hidden_size = 100
     output_size = 1
     learning_rate = 0.01
-    epochs = 100
     
     # LSTM 모델 생성
     class LSTM(torch.nn.Module):
@@ -100,10 +99,10 @@ def TrainModel_LSTM(data_loader, seq_len, epochs):
             self.lstm = torch.nn.LSTM(input_size, hidden_size, batch_first=True)
             self.linear = torch.nn.Linear(hidden_size, 1)
         
-        def reset_hidden_state(self):
+        def reset_hidden_state(self, batch_size):
             self.hidden = (
-                torch.zeros(1, self.batch_size, self.hidden_size),
-                torch.zeros(1, self.batch_size, self.hidden_size)
+                torch.zeros(1, batch_size, self.hidden_size),
+                torch.zeros(1, batch_size, self.hidden_size)
             )
             
         def forward(self, x):
@@ -118,6 +117,7 @@ def TrainModel_LSTM(data_loader, seq_len, epochs):
     train_hist = np.zeros(epochs)
     
     for epoch in range(epochs):
+        model.reset_hidden_state(batch_size=data_loader.batch_size) 
         for i, data in enumerate(data_loader):
             x, y = data
             optimizer.zero_grad()
@@ -127,45 +127,42 @@ def TrainModel_LSTM(data_loader, seq_len, epochs):
             optimizer.step()
             
             if i % 100 == 0:
-                print("Epoch: %d, Batch: %d, Loss: %1.5f" % (epoch, i, loss.item()))
+                print("Epoch: %d, Batch: %d, Loss: %1.5f, ModelINF: %s" % (epoch, i, loss.item(), stockID))
                 
-    # train
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # lstm = LSTM(input_size, hidden_size).to(device)
-    model, train_hist = TrainModel_LSTM(data_loader, seq_len, epochs)
-    
+        train_hist[epoch] = loss.item()
     # 모델 저장 & 기록
-    ModelLossDraw(train_hist)
+    ModelLossDraw(train_hist, stockID)
     SaveModelPth(model)
-    
+        
     return model
     
-def ModelLossDraw(train_hist):
+def ModelLossDraw(train_hist, stockID):
     plt.figure(figsize=(12, 6))
     plt.plot(train_hist, label="Training loss")
     plt.title("Loss at each epoch")
     plt.legend()
-    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_train_loss.png")
+    plt.savefig(f"./output/{int(datetime.datetime.now().timestamp())}_train_loss-{stockID}.png")
     
     return None
 
-def SaveModelPth(model):
-    torch.save(model.state_dict(), f"./model/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_model.pth")
+def SaveModelPth(model, stockID):
+    torch.save(model.state_dict(), f"./model/{int(datetime.datetime.now().timestamp())}_model-{stockID}.pth")
     
     return None
 
-def PredictTestDataset(model, testX_tensor, scaler_y):
+def PredictTestDataset(model, testX_tensor, scaler_y, stockID):
     model.eval()
     test_predict = model(testX_tensor)
     test_predict = scaler_y.inverse_transform(test_predict.detach().numpy())
     
+    DrawTestDatasetOut(test_predict, stockID)
     
     return test_predict
 
-def DrawTestDatasetOut(test_predict):
+def DrawTestDatasetOut(test_predict, stockID):
     fig = plt.figure(facecolor='white', figsize=(20, 10))
     ax = fig.add_subplot(111)
     ax.plot(test_predict, label='Predict')
     ax.legend()
     plt.show()
-    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_predict.png")
+    plt.savefig(f"./output/{int(datetime.datetime.now().timestamp())}_predict-{stockID}.png")

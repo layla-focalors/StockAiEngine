@@ -52,6 +52,6 @@ def MultiInference(env):
     system.DeleteDatabaseRequire(databaseID)
     
     # 학습 실행
-    train.RunTrain(databaseID)
+    train.RunTrain(databaseID, stock)
     
     
