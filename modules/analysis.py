@@ -1,6 +1,8 @@
 from modules import system
 from modules import version
 from modules import db
+from modules import croller
+
 import datetime
 
 def getSystem():
@@ -15,7 +17,7 @@ def ExcuteTask(data):
     if version.getProcessVersion()[0:3] == "Dev":
         # dev
         print(output)
-        MultiInference()
+        MultiInference("Dev")
     else:
         # release
         while True:
@@ -23,12 +25,16 @@ def ExcuteTask(data):
             if out == "stop":
                 break
     
-def MultiInference():
-    user_input = input("분석에 활용할 거래소, 종목을 입력하십시오. (종료 : exit) : ")
-    if user_input == "exit":
-        return "stop"
-    elif ":" not in user_input:
-        return None
+def MultiInference(env):
+    if env == "Dev":
+        user_input = "nasdaq:aapl"
+    else:
+        user_input = input("분석에 활용할 거래소, 종목을 입력하십시오. (종료 : exit) : ")
+        
+        if user_input == "exit":
+            return "stop"
+        elif ":" not in user_input:
+            return None
     
     dt = user_input.split(":")
     
@@ -37,7 +43,8 @@ def MultiInference():
     
     print(f"거래소 : {trade}, 종목 : {stock}")
     
-    # db 생성
-    db.CreateTableAndDatabase()
+    # db 생성, databaseID 반환
+    databaseID = db.CreateTableAndDatabase()
+    croller.RunCroller(trade, stock, databaseID)
     
     

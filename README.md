@@ -8,3 +8,7 @@
 3. 웹 기반 ui 추가 - Next.js 
 4. 서비스 배포 - AWS, Azure, GCP // 유료 요금제 추가  
 5. 자동운영 추가 - 키움 API
+
+### 예측 모델
+LSTM / RNN
+TYPE : Pytorch
