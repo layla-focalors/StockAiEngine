@@ -7,6 +7,20 @@ def getSystemInfomation():
 def MakeEnvironment():
     os.system("pip install yahoo-fin")
     
+def DeleteImageRequire():
+    file_list = os.listdir('./output')
+    image_list = []
+    
+    for file in file_list:
+        if file.endswith('.jpg') or file.endswith('.png'):
+            image_list.append(file)
+    
+    if len(image_list) >= 10:
+        image_list.sort(key=lambda x: int(''.join(filter(str.isdigit, x))), reverse=True)
+        for i in range(1, len(image_list)):
+            os.remove(f"./output/{image_list[i]}")
+        print("오래된 이미지의 개수가 10개를 초과하여 자동 삭제되었습니다.")
+    
 def DeleteDatabaseRequire(databaseID):
     file_list = os.listdir('./database')
     new_file_list = []

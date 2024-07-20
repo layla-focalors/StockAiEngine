@@ -51,6 +51,9 @@ def MultiInference(env):
     # 오래된 DB 정리
     system.DeleteDatabaseRequire(databaseID)
     
+    # 오래된 이미지 정리
+    system.DeleteImageRequire()
+    
     # 학습 실행
     train.RunTrain(databaseID, stock)
     
