@@ -11,4 +11,10 @@
 
 ### 예측 모델
 LSTM / RNN
-TYPE : Pytorch
+TYPE : Pytorch 
+
+### 추가 개발
+LSTM - 만약 사전 학습 모델이 있다면 해당 모델의 가중치 불러오기
+없다면 학습 과정부터 진행  
+실행 시 가중치 로드 후 분석할것인지 질문  
+분석 종료 후 OpenAI ChatGPT / Ollama / OndeviceLLM 호출 후 분석 리포트 작성 후 안내
