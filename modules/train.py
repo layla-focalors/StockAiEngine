@@ -1,5 +1,6 @@
 import pandas as pd
 import random
+import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
@@ -78,3 +79,72 @@ def TranslationTensorType(train_set, test_set, seq_len, batch):
     
     data_loader = DataLoader(dataset, batch_size=batch, shuffle=True, drop_last=True)
     return data_loader
+
+def TrainModel_LSTM(data_loader, seq_len, epochs):
+    
+    input_size = 6
+    hidden_size = 100
+    output_size = 1
+    learning_rate = 0.01
+    epochs = 100
+    
+    # LSTM 모델 생성
+    class LSTM(torch.nn.Module):
+        def __init__(self, input_size, hidden_size):
+            super(LSTM, self).__init__()
+            self.input_size = input_size
+            self.hidden_size = hidden_size
+            self.lstm = torch.nn.LSTM(input_size, hidden_size, batch_first=True)
+            self.linear = torch.nn.Linear(hidden_size, 1)
+        
+        def reset_hidden_state(self):
+            self.hidden = (
+                torch.zeros(1, self.batch_size, self.hidden_size),
+                torch.zeros(1, self.batch_size, self.hidden_size)
+            )
+            
+        def forward(self, x):
+            x, _status = self.lstm(x)
+            x = self.linear(x[:, -1])
+            return x
+    
+    model = LSTM(input_size, hidden_size)
+    loss_function = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    train_hist = np.zeros(epochs)
+    
+    for epoch in range(epochs):
+        for i, data in enumerate(data_loader):
+            x, y = data
+            optimizer.zero_grad()
+            output = model(x)
+            loss = loss_function(output, y)
+            loss.backward()
+            optimizer.step()
+            
+            if i % 100 == 0:
+                print("Epoch: %d, Batch: %d, Loss: %1.5f" % (epoch, i, loss.item()))
+                
+    # train
+    lstm = LSTM(input_size, hidden_size).to(torch.device)
+    model, train_hist = TrainModel_LSTM(data_loader, seq_len, epochs)
+    
+    # 모델 저장 & 기록
+    ModelLossDraw(train_hist)
+    SaveModelPth(model)
+    
+    return model
+    
+def ModelLossDraw(train_hist):
+    plt.figure(figsize=(12, 6))
+    plt.plot(train_hist, label="Training loss")
+    plt.title("Loss at each epoch")
+    plt.legend()
+    plt.savefig(f"./output/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_loss.png")
+    
+    return None
+
+def SaveModelPth(model):
+    torch.save(model.state_dict(), f"./model/{datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')}_model.pth")
+    
+    return None
